@@ -31,7 +31,7 @@
                   , but not getting desired results.
 */
 
-//Hardware build target: ESP32
+// Hardware build target: ESP32
 #define VERSION "1.1.1"
 
 #ifdef heltec
@@ -165,13 +165,21 @@ void setup() {
   title("Boot count: %i", bootCount);
   Serial.println(environment.deviceID, HEX);
 
+  // Configure the watchdog timer
+  // esp_task_wdt_config_t wdt_config = {
+  //   .timeout_ms = WDT_TIMEOUT * 1000, // Convert seconds to milliseconds
+  // };
+
+  // esp_err_t err = esp_task_wdt_init(&wdt_config);
+  // if (err != ESP_OK) {
+  //   Serial.println("Failed to initialize Task Watchdog!");
+  // }
+
   //Enable WDT for any lock-up events
   esp_task_wdt_init(WDT_TIMEOUT, true);
   esp_task_wdt_add(NULL);
 
   //time testing
-
-
   time(&now);
   localtime_r(&now, &timeinfo);
   updateWake();
