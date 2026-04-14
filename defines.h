@@ -7,7 +7,7 @@
 //===========================================
 // Pin Defines
 //===========================================
-#define WIND_SPD_PIN 14  //reed switch based anemometer count
+#define WIND_SPD_PIN 34  //reed switch based anemometer count
 #define RAIN_PIN     25  //reed switch based tick counter on tip bucket
 #define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
 #define PR_PIN       15  //photoresistor pin 
@@ -17,7 +17,7 @@
 #define LED_BUILTIN   2  //Diagnostics using built-in LED, may be set to 12 for newer boards that do not use devkit sockets
 #define LORA_PWR     16
 #define SENSOR_PWR   26
-#define CHG_STAT     34
+#define CHG_STAT     33
 
 
 #define SEC 1E6          //Multiplier for uS based math
