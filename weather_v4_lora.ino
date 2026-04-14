@@ -245,7 +245,7 @@ void setup() {
       //Rainfall interrupt pin set up
       //delay(100);  //possible settling time on pin to charge
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
-      attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
+      attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, FALLING);
       //give 5 seconds to aquire wind speed data
       delay(5000);
       //TODO: set TOD on interval
