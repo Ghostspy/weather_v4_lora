@@ -26,7 +26,7 @@ void IRAM_ATTR rainTick(void)
 {
   timeSinceLastTip = millis() - lastTip;
   //software debounce attempt
-  if (timeSinceLastTip > 400)
+  if (timeSinceLastTip > RAIN_DEBOUNCE_MS)
   {
     validTimeSinceLastTip = timeSinceLastTip;
     rainTicks++;
@@ -113,7 +113,7 @@ int last24(void)
 void clearRainfallMinute(int minutePtr)
 {
   int minuteIndex;
-  minuteIndex = (float)minutePtr / 10;
+  minuteIndex = minutePtr / 10;
   //Clear carryover if hourPtr is not matching prior hourPtr value (we have a new hour)
   if (rainfall.priorMinute != minuteIndex)
   {
@@ -131,7 +131,7 @@ void clearRainfallMinute(int minutePtr)
 void addTipsToMinute(int count)
 {
   MonPrintf("Minute: %i\n", timeinfo.tm_min);
-  int minuteIndex = (float)timeinfo.tm_min / 10;
+  int minuteIndex = timeinfo.tm_min / 10;
   MonPrintf("Minute Index: %i\n", minuteIndex);
   rainfall.current60MinRainfall[minuteIndex % 6] += count;
 }

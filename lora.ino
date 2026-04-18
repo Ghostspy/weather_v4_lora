@@ -2,7 +2,7 @@
 // loraSend: Send environment sensor data
 //===========================================
 void loraSend(void *packetStart, int packetSize) {
-  LoRa.setSyncWord(0x54);
+  LoRa.setSyncWord(LORA_SYNC_WORD);
   LoRa.enableCrc();
   LoRa.beginPacket();
   MonPrintf("Packet size: %i\n", packetSize);

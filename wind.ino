@@ -6,20 +6,16 @@ volatile unsigned long lastTick = 0;
 volatile unsigned long tickTime[20] = { 0 };
 volatile int count = 0;
 
-//========================================================================
-//  readWindSpeed: Look at ISR data to see if we have wind data to average
-//========================================================================
-void readWindSpeed(struct sensorData *environment) {
-  float windSpeed = 0;
-  int position;
+//=======================================================
+//  calculateWindSpeed: shared helper — averages ISR tick deltas.
+//  Skips tickTime[0] (measured from cold lastTick=0, unreliable).
+//=======================================================
+static float calculateWindSpeed(void) {
   long msTotal = 0;
   int samples = 0;
-
-  //intentionally ignore the zeroth element
-  //look at up to 5 ticks to get wind speed
   if (count) {
     MonPrintf("Count: %i\n", count);
-    for (position = 1; position < 7; position++) {
+    for (int position = 1; position < 7; position++) {
       if (tickTime[position]) {
         msTotal += tickTime[position];
         samples++;
@@ -28,16 +24,18 @@ void readWindSpeed(struct sensorData *environment) {
   } else {
     MonPrintf("No count values\n");
   }
-  //Average samples
   if (msTotal > 0 && samples > 0) {
-    windSpeed = 2.4 * 1000 / (msTotal / samples);
-  } else {
-    MonPrintf("No Wind data\n");
-    windSpeed = 0;
+    return (WIND_SPEED_CALIBRATION * 1000.0f / ((float)msTotal / samples)) / WIND_TICKS_PER_REVOLUTION;
   }
-  //I see 2 ticks per revolution
-  windSpeed = windSpeed / WIND_TICKS_PER_REVOLUTION;
+  MonPrintf("No Wind data\n");
+  return 0.0f;
+}
 
+//========================================================================
+//  readWindSpeed: Look at ISR data to see if we have wind data to average
+//========================================================================
+void readWindSpeed(struct sensorData *environment) {
+  float windSpeed = calculateWindSpeed();
   MonPrintf("WindSpeed: %f\n", windSpeed);
   MonPrintf("maxWindSpeed: %f\n", maxWindSpeed);
   environment->windSpeed = windSpeed;
@@ -54,39 +52,10 @@ void readWindDirectionADC(struct sensorData *environment) {
 }
 
 //=======================================================
-//  checkMaxWind: Update max windspeed, if needed
+//  checkMaxWind: Update max windspeed if current exceeds stored gust
 //=======================================================
 void checkMaxWind(void) {
-
-  //if current windspeed > MaxWindspeed
-  //MaxWindspeed = current
-  float windSpeed = 0;
-  int position;
-  long msTotal = 0;
-  int samples = 0;
-
-  //intentionally ignore the zeroth element
-  //look at up to 5 ticks to get wind speed
-  if (count) {
-    MonPrintf("Count: %i\n", count);
-    for (position = 1; position < 7; position++) {
-      if (tickTime[position]) {
-        msTotal += tickTime[position];
-        samples++;
-      }
-    }
-  } else {
-    MonPrintf("No count values\n");
-  }
-  //Average samples
-  if (msTotal > 0 && samples > 0) {
-    windSpeed = 2.4 * 1000 / (msTotal / samples);
-  } else {
-    MonPrintf("No Wind data\n");
-    windSpeed = 0;
-  }
-  //I see 2 ticks per revolution
-  windSpeed = windSpeed / WIND_TICKS_PER_REVOLUTION;
+  float windSpeed = calculateWindSpeed();
   if (windSpeed > maxWindSpeed) {
     maxWindSpeed = windSpeed;
   }
@@ -101,7 +70,7 @@ void IRAM_ATTR windTick(void) {
   timeSinceLastTick = millis() - lastTick;
   //software debounce attempt
   //record up to 10 ticks from anemometer
-  if (timeSinceLastTick > 10 && count < 10) {
+  if (timeSinceLastTick > WIND_DEBOUNCE_MS && count < WIND_MAX_SAMPLES) {
     lastTick = millis();
     tickTime[count] = timeSinceLastTick;
     count++;

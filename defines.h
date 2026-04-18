@@ -46,3 +46,32 @@ const int UpdateIntervalSeconds = 30;  //Sleep timer (30s) for my normal operati
 //===========================================
 //I see 2 switch pulls to GND per revolation. Not sure what others see
 #define WIND_TICKS_PER_REVOLUTION 2
+
+//===========================================
+// ISR Debounce timings (milliseconds)
+//===========================================
+#define RAIN_DEBOUNCE_MS    400   // min ms between valid rain gauge tips
+#define WIND_DEBOUNCE_MS     10   // min ms between valid anemometer ticks
+#define WIND_MAX_SAMPLES     10   // max ISR ticks buffered per wake cycle
+
+//===========================================
+// Wind speed calibration
+//===========================================
+// 2.4 km/h per revolution per second is the anemometer constant
+#define WIND_SPEED_CALIBRATION 2.4f
+
+//===========================================
+// Wind acquisition window
+//===========================================
+#define WIND_ACQUISITION_MS 5000  // ms to collect wind ticks before reading
+
+//===========================================
+// LoRa sync word (must match receiver)
+//===========================================
+#define LORA_SYNC_WORD 0x54
+
+//===========================================
+// Send cycle: environment on boot 0, hardware on boot SEND_FREQUENCY_LORA
+// Full cycle = 2 * SEND_FREQUENCY_LORA wakes
+//===========================================
+#define FULL_SEND_CYCLE (2 * SEND_FREQUENCY_LORA)

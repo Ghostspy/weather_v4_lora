@@ -242,12 +242,12 @@ void setup() {
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
       attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, FALLING);
       //give 5 seconds to aquire wind speed data
-      delay(5000);
+      delay(WIND_ACQUISITION_MS);
       //TODO: set TOD on interval
       checkMaxWind();
 
 
-      if (bootCount % (2 * SEND_FREQUENCY_LORA) == 0) {
+      if (bootCount % FULL_SEND_CYCLE == 0) {
         title("Sending sensor data");
 
 
@@ -279,7 +279,7 @@ void setup() {
         //Power down peripherals
         LoRa.end();
         powerDownAll();
-      } else if (bootCount % (2 * SEND_FREQUENCY_LORA) == SEND_FREQUENCY_LORA) {
+      } else if (bootCount % FULL_SEND_CYCLE == SEND_FREQUENCY_LORA) {
         title("Sending hardware data");
         sensorEnable();
         sensorStatusToConsole();
