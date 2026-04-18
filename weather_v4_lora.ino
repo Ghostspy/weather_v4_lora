@@ -115,7 +115,7 @@ struct rainfallData {
 RTC_DATA_ATTR volatile int rainTicks = 0;
 RTC_DATA_ATTR struct rainfallData rainfall;
 RTC_DATA_ATTR int bootCount = 0;
-RTC_DATA_ATTR float maxWindSpeed = 0;
+RTC_DATA_ATTR float maxWindSpeed = 0.0f;
 
 
 //===========================================
@@ -283,7 +283,6 @@ void setup() {
         powerDownSensors();
         LoRaPowerUp();
         BlinkLED(2);
-        //TODO: Send Environment or hardware
         loraSend(LoRaPacket, LoRaPacketSize);
         //Power down peripherals
         LoRa.end();
@@ -302,7 +301,6 @@ void setup() {
         powerDownSensors();
         LoRaPowerUp();
         BlinkLED(2);
-        //TODO: Send Environment or hardware
         loraSend(LoRaPacket, LoRaPacketSize);
         //Power down peripherals
         LoRa.end();
