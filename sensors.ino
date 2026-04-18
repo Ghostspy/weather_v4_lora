@@ -1,9 +1,7 @@
 OneWire oneWire(TEMP_PIN);
 DallasTemperature temperatureSensor(&oneWire);
 
-extern "C" {
-  uint8_t temprature_sens_read();
-}
+#include "driver/temperature_sensor.h"
 
 
 //===========================================
@@ -141,16 +139,26 @@ void readUV(struct sensorData *environment) {
 }
 
 //===========================================
-// readESPCoreTemp:
+// readESPCoreTemp: ESP32 internal temperature sensor
+// Uses the ESP-IDF 5.x temperature_sensor driver (Arduino 3.x).
+// The sensor has ~1-2 °C accuracy and measures the die, not ambient.
 //===========================================
 void readESPCoreTemp(struct diagnostics *hardware) {
-  //TODO: Validate this, I see the same number all the time
-  unsigned int coreF, coreC;
-  coreF = temprature_sens_read();
-  coreC = (coreF - 32) * 5 / 9;
-  hardware->coreC = coreC;
-  MonPrintf("F %i\n", coreF);
-  MonPrintf("C %i\n", coreC);
+#if SOC_TEMP_SENSOR_SUPPORTED
+  temperature_sensor_handle_t tempHandle = NULL;
+  temperature_sensor_config_t tempConfig = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
+  temperature_sensor_install(&tempConfig, &tempHandle);
+  temperature_sensor_enable(tempHandle);
+  float coreC = 0;
+  temperature_sensor_get_celsius(tempHandle, &coreC);
+  temperature_sensor_disable(tempHandle);
+  temperature_sensor_uninstall(tempHandle);
+  hardware->coreC = (int)coreC;
+  MonPrintf("Core temp: %.1f C\n", coreC);
+#else
+  // Original ESP32 does not include the temperature_sensor IDF driver
+  hardware->coreC = 0;
+#endif
 }
 
 //===========================================

@@ -38,7 +38,7 @@
 #include "heltec.h"
 #else
 #include <LoRa.h>
-#include <spi.h>
+#include <SPI.h>
 #endif
 
 #include "defines.h"
@@ -165,18 +165,13 @@ void setup() {
   title("Boot count: %i", bootCount);
   Serial.println(environment.deviceID, HEX);
 
-  // Configure the watchdog timer
-  // esp_task_wdt_config_t wdt_config = {
-  //   .timeout_ms = WDT_TIMEOUT * 1000, // Convert seconds to milliseconds
-  // };
-
-  // esp_err_t err = esp_task_wdt_init(&wdt_config);
-  // if (err != ESP_OK) {
-  //   Serial.println("Failed to initialize Task Watchdog!");
-  // }
-
-  //Enable WDT for any lock-up events
-  esp_task_wdt_init(WDT_TIMEOUT, true);
+  //Enable WDT for any lock-up events (ESP32 Arduino 3.x / ESP-IDF 5.x API)
+  esp_task_wdt_config_t wdt_config = {
+    .timeout_ms = WDT_TIMEOUT * 1000,
+    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+    .trigger_panic = true,
+  };
+  esp_task_wdt_reconfigure(&wdt_config);
   esp_task_wdt_add(NULL);
 
   //time testing
@@ -218,18 +213,18 @@ void setup() {
   switch (wakeup_reason) {
     //Power on reset
     case 0:
-      // set current day/time
-      //reality - I set an arbitrary TOD as actual time is not critical, just relative time for current hour and past 24h rainfall
-
-
-      tv.tv_sec = 1667301066;  // enter UTC UNIX time (get it from https://www.unixtimestamp.com )
+      // Seed clock from compile time so rainfall hour/minute buckets start
+      // at a sane time. No network available for NTP; this drifts but is
+      // accurate to within a few seconds of when the sketch was built.
+      tv.tv_sec = compileTime();
+      tv.tv_usec = 0;
       settimeofday(&tv, NULL);
       //default to wake 5 sec after POR
       nextUpdate = 5;
       break;
 
     //Rain Tip Gauge
-    case ESP_SLEEP_WAKEUP_EXT0:
+    case ESP_SLEEP_WAKEUP_EXT1:
       MonPrintf("Wakeup caused by external signal using RTC_IO\n");
       //updateWake();
       rainTicks++;
@@ -341,7 +336,12 @@ void sleepyTime(long nextUpdate) {
   //rtc_gpio_set_level(GPIO_NUM_16, HIGH);
   //rtc_gpio_set_level(GPIO_NUM_26, HIGH);
 
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
+  // EXT1 wakeup works on both ESP32 and ESP32-S3 (EXT0 was ESP32-only).
+  // Wakes on LOW — matches the rain gauge reed switch pulling to GND.
+  // NOTE: on ESP32-S3, RAIN_PIN must be in the range 0-21 (RTC-capable GPIOs).
+  //       GPIO 25 does not exist on ESP32-S3; reassign RAIN_PIN in defines.h
+  //       if targeting S3 hardware.
+  esp_sleep_enable_ext1_wakeup(1ULL << RAIN_PIN, ESP_EXT1_WAKEUP_ALL_LOW);
   elapsedTime = (int)millis() / 1000;
 
   //subtract elapsed time to try to maintain interval
@@ -433,6 +433,35 @@ void PrintEnvironment(struct sensorData environment) {
   Serial.printf("UV Index: %f\n", environment.UVIndex);
   Serial.printf("Lux: %f\n", environment.lux);
   Serial.printf("DEVID: %x\n", environment.deviceID);
+}
+
+//===========================================
+// compileTime: parse __DATE__ / __TIME__ into a Unix timestamp.
+// Used on POR to seed the software clock without NTP.
+//===========================================
+time_t compileTime() {
+  const char* months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+  char monthStr[4];
+  int day, year, hour, minute, second;
+
+  sscanf(__DATE__, "%3s %d %d", monthStr, &day, &year);
+  sscanf(__TIME__, "%d:%d:%d", &hour, &minute, &second);
+
+  int month = 0;
+  for (int i = 0; i < 12; i++) {
+    if (strncmp(monthStr, months[i], 3) == 0) { month = i; break; }
+  }
+
+  struct tm t = {};
+  t.tm_year  = year - 1900;
+  t.tm_mon   = month;
+  t.tm_mday  = day;
+  t.tm_hour  = hour;
+  t.tm_min   = minute;
+  t.tm_sec   = second;
+  t.tm_isdst = -1;
+  return mktime(&t);
 }
 
 //===========================================
