@@ -232,6 +232,8 @@ void setup() {
     //Rain Tip Gauge
     case ESP_SLEEP_WAKEUP_EXT1:
       MonPrintf("Wakeup caused by external signal using RTC_IO\n");
+      // Guard for consistency — no ISR is attached yet at this point,
+      // but rainTicks is shared with main-loop timer wake path.
       portENTER_CRITICAL(&rainMux);
       rainTicks++;
       portEXIT_CRITICAL(&rainMux);

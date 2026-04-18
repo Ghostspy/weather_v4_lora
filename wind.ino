@@ -62,6 +62,8 @@ void readWindDirectionADC(struct sensorData *environment) {
   MonPrintf("WindDirADC: %i\n", environment->windDirectionADC);
 }
 
+// maxWindSpeed: both readWindSpeed() and checkMaxWind() run sequentially in main-loop
+// context (no ISR writes it), so no lock is needed.
 //=======================================================
 //  checkMaxWind: Update max windspeed if current exceeds stored gust
 //=======================================================
@@ -78,6 +80,8 @@ void checkMaxWind(void) {
 //  windTick: ISR to capture wind speed relay closure
 //=======================================================
 void IRAM_ATTR windTick(void) {
+  // lastTick and timeSinceLastTick are only ever read/written by this ISR —
+  // no cross-core lock needed for them. tickTime[] and count are shared with main loop.
   timeSinceLastTick = millis() - lastTick;
   //software debounce attempt
   //record up to 10 ticks from anemometer

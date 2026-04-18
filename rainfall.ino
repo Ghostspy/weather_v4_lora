@@ -25,6 +25,8 @@ void copyRainTicks60m(struct sensorData *environment)
 //ISR
 void IRAM_ATTR rainTick(void)
 {
+  // lastTip and timeSinceLastTip are only ever read/written by this ISR —
+  // no cross-core lock needed for them. rainTicks is shared with main loop.
   timeSinceLastTip = millis() - lastTip;
   //software debounce attempt
   if (timeSinceLastTip > RAIN_DEBOUNCE_MS)
