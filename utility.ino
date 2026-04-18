@@ -36,3 +36,8 @@ void powerUpSensors(void)
   digitalWrite(SENSOR_PWR, HIGH);
   delay(SENSOR_POWER_SETTLE_MS);
 }
+
+void powerDownSensors(void)
+{
+  digitalWrite(SENSOR_PWR, LOW);
+}

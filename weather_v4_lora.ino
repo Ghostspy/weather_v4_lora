@@ -288,7 +288,7 @@ void setup() {
         LoRaPacket = &environment;
         LoRaPacketSize = sizeof(environment);
         PrintEnvironment(environment);
-        //TODO: New LoRa power up
+        powerDownSensors();
         LoRaPowerUp();
         BlinkLED(2);
         //TODO: Send Environment or hardware
@@ -307,7 +307,7 @@ void setup() {
         LoRaPacket = &hardware;
         LoRaPacketSize = sizeof(hardware);
         Serial.printf("DEVID: %x\n", hardware.deviceID);
-        //TODO: New LoRa power up
+        powerDownSensors();
         LoRaPowerUp();
         BlinkLED(2);
         //TODO: Send Environment or hardware
