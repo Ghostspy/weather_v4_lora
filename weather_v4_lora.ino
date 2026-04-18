@@ -219,6 +219,11 @@ void setup() {
   switch (wakeup_reason) {
     //Power on reset
     case 0:
+      // Explicitly initialize RTC memory on first boot — not guaranteed zero by hardware
+      memset(&rainfall, 0, sizeof(rainfall));
+      rainTicks = 0;
+      bootCount = 0;
+      maxWindSpeed = 0.0f;
       // Seed clock from compile time so rainfall hour/minute buckets start
       // at a sane time. No network available for NTP; this drifts but is
       // accurate to within a few seconds of when the sketch was built.
