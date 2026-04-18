@@ -66,7 +66,7 @@
 //===========================================
 // Weather-environment structure
 //===========================================
-struct sensorData {
+struct __attribute__((packed)) sensorData {
   int deviceID;
   int windDirectionADC;
   int rainTicks24h;
@@ -83,7 +83,7 @@ struct sensorData {
 //===========================================
 // Station hardware structure
 //===========================================
-struct diagnostics {
+struct __attribute__((packed)) diagnostics {
   int deviceID;
   float BMEtemperature;
   int batteryADC;
@@ -109,7 +109,7 @@ struct sensorStatus {
 struct rainfallData {
   unsigned int intervalRainfall;
   unsigned int hourlyRainfall[24];
-  unsigned int current60MinRainfall[5];
+  unsigned int current60MinRainfall[6];
   unsigned int hourlyCarryover;
   unsigned int priorHour;
   unsigned int minuteCarryover;
@@ -319,7 +319,6 @@ void loop() {
 // printTitle
 //===================================================
 void printTitle(void) {
-  char buffer[32];
   Serial.printf("\n\nWeather station v4\n");
   Serial.printf("Version %s\n\n", VERSION);
 }
@@ -363,7 +362,7 @@ void MonPrintf(const char *format, ...) {
   char buffer[200];
   va_list args;
   va_start(args, format);
-  vsprintf(buffer, format, args);
+  vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
 #ifdef SerialMonitor
   Serial.printf("%s", buffer);
@@ -393,7 +392,7 @@ void BlinkLED(int count) {
 // HexDump: display environment structure bytes
 //===========================================
 void HexDump(struct sensorData environment) {
-  int size = 28;
+  int size = sizeof(sensorData);
   int x;
   char ch;
   char *p = (char *)&environment;
@@ -471,7 +470,7 @@ void title(const char *format, ...) {
   char buffer[200];
   va_list args;
   va_start(args, format);
-  vsprintf(buffer, format, args);
+  vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
 #ifdef SerialMonitor
   Serial.printf("==============================================\n");
