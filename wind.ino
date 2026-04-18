@@ -5,6 +5,7 @@ volatile unsigned long timeSinceLastTick = 0;
 volatile unsigned long lastTick = 0;
 volatile unsigned long tickTime[WIND_MAX_SAMPLES] = { 0 };
 volatile int count = 0;
+portMUX_TYPE windMux = portMUX_INITIALIZER_UNLOCKED;
 
 //=======================================================
 //  calculateWindSpeed: shared helper — averages ISR tick deltas.
@@ -13,11 +14,21 @@ volatile int count = 0;
 static float calculateWindSpeed(void) {
   long msTotal = 0;
   int samples = 0;
-  if (count) {
-    MonPrintf("Count: %i\n", count);
-    for (int position = 1; position < count && position < WIND_MAX_SAMPLES; position++) {
-      if (tickTime[position]) {
-        msTotal += tickTime[position];
+  int localCount;
+  unsigned long localTickTime[WIND_MAX_SAMPLES];
+
+  portENTER_CRITICAL(&windMux);
+  localCount = count;
+  for (int i = 0; i < localCount && i < WIND_MAX_SAMPLES; i++) {
+    localTickTime[i] = tickTime[i];
+  }
+  portEXIT_CRITICAL(&windMux);
+
+  if (localCount) {
+    MonPrintf("Count: %i\n", localCount);
+    for (int position = 1; position < localCount && position < WIND_MAX_SAMPLES; position++) {
+      if (localTickTime[position]) {
+        msTotal += localTickTime[position];
         samples++;
       }
     }
@@ -72,8 +83,10 @@ void IRAM_ATTR windTick(void) {
   //record up to 10 ticks from anemometer
   if (timeSinceLastTick > WIND_DEBOUNCE_MS && count < WIND_MAX_SAMPLES) {
     lastTick = millis();
+    portENTER_CRITICAL_ISR(&windMux);
     tickTime[count] = timeSinceLastTick;
     count++;
+    portEXIT_CRITICAL_ISR(&windMux);
     //digitalWrite(LED_BUILTIN, HIGH);
   }
 }

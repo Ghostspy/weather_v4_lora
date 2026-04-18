@@ -2,6 +2,7 @@
 volatile unsigned long timeSinceLastTip = 0;
 volatile unsigned long validTimeSinceLastTip = 0;
 volatile unsigned long lastTip = 0;
+portMUX_TYPE rainMux = portMUX_INITIALIZER_UNLOCKED;
 
 //
 //
@@ -29,7 +30,9 @@ void IRAM_ATTR rainTick(void)
   if (timeSinceLastTip > RAIN_DEBOUNCE_MS)
   {
     validTimeSinceLastTip = timeSinceLastTip;
+    portENTER_CRITICAL_ISR(&rainMux);
     rainTicks++;
+    portEXIT_CRITICAL_ISR(&rainMux);
     lastTip = millis();
   }
 }

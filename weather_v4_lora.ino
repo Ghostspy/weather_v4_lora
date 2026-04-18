@@ -132,6 +132,12 @@ void IRAM_ATTR rainTick(void);
 void IRAM_ATTR windTick(void);
 
 //===========================================
+// ISR mutex declarations (defined in rainfall.ino / wind.ino)
+//===========================================
+extern portMUX_TYPE rainMux;
+extern portMUX_TYPE windMux;
+
+//===========================================
 // Global instantiation
 //===========================================
 BH1750 lightMeter(0x23);
@@ -226,8 +232,9 @@ void setup() {
     //Rain Tip Gauge
     case ESP_SLEEP_WAKEUP_EXT1:
       MonPrintf("Wakeup caused by external signal using RTC_IO\n");
-      //updateWake();
+      portENTER_CRITICAL(&rainMux);
       rainTicks++;
+      portEXIT_CRITICAL(&rainMux);
       break;
 
     //Timer
@@ -255,15 +262,18 @@ void setup() {
         sensorEnable();
         sensorStatusToConsole();
 
-        //update rainfall
-        addTipsToMinute(rainTicks);
-        clearRainfallMinute(timeinfo.tm_min + 10);
-        //printMinuteArray();
-
-        addTipsToHour(rainTicks);
-        clearRainfallHour(timeinfo.tm_hour + 1);
-        //printHourlyArray();
+        //update rainfall — atomically snapshot and clear rainTicks
+        int localRainTicks;
+        portENTER_CRITICAL(&rainMux);
+        localRainTicks = rainTicks;
         rainTicks = 0;
+        portEXIT_CRITICAL(&rainMux);
+
+        addTipsToMinute(localRainTicks);
+        clearRainfallMinute(timeinfo.tm_min + 10);
+
+        addTipsToHour(localRainTicks);
+        clearRainfallHour(timeinfo.tm_hour + 1);
 
         //environmental sensor data send
         readSensors(&environment);
