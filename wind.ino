@@ -3,7 +3,7 @@
 //=======================================================
 volatile unsigned long timeSinceLastTick = 0;
 volatile unsigned long lastTick = 0;
-volatile unsigned long tickTime[20] = { 0 };
+volatile unsigned long tickTime[WIND_MAX_SAMPLES] = { 0 };
 volatile int count = 0;
 
 //=======================================================
