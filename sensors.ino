@@ -16,7 +16,7 @@ void sensorEnable(void) {
 #endif
   status.bme = bme.begin();
   status.uv = uv.begin();
-  status.lightMeter = lightMeter.begin();
+  status.lightMeter = lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE, 0x5C);
 
   temperatureSensor.begin();  //returns void - cannot directly check
 }
