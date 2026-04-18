@@ -57,7 +57,7 @@ const int UpdateIntervalSeconds = 30;  //Sleep timer (30s) for my normal operati
 //===========================================
 // Wind speed calibration
 //===========================================
-// 2.4 km/h per revolution per second is the anemometer constant
+// 2.4 km/h is the anemometer output per revolution per second (manufacturer spec)
 #define WIND_SPEED_CALIBRATION 2.4f
 
 //===========================================
@@ -71,7 +71,13 @@ const int UpdateIntervalSeconds = 30;  //Sleep timer (30s) for my normal operati
 #define LORA_SYNC_WORD 0x54
 
 //===========================================
-// Send cycle: environment on boot 0, hardware on boot SEND_FREQUENCY_LORA
-// Full cycle = 2 * SEND_FREQUENCY_LORA wakes
+// Power rail settling times (milliseconds)
+//===========================================
+#define SENSOR_POWER_SETTLE_MS  500   // ms for sensor rail to stabilize after power-on
+#define LORA_POWER_SETTLE_MS    500   // ms for LoRa module to stabilize after power-on
+
+//===========================================
+// Full cycle repeats every 2 * SEND_FREQUENCY_LORA timer wakes
+// Environment packet sent first half, hardware/diagnostics packet sent second half
 //===========================================
 #define FULL_SEND_CYCLE (2 * SEND_FREQUENCY_LORA)

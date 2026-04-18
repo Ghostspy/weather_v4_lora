@@ -2,9 +2,9 @@ void LoRaPowerUp(void)
 {
   //Turn on LoRa
   //let power stabilize before turning on LoRa
-  delay(500);
+  delay(LORA_POWER_SETTLE_MS);
   digitalWrite(LORA_PWR, HIGH);  //TODO: Need these as RTC_IO pins to stay enabled all the time
-  delay(500);
+  delay(LORA_POWER_SETTLE_MS);
 
 #ifdef heltec
   LoRa.setPins(18, 14, 26);
@@ -13,8 +13,9 @@ void LoRaPowerUp(void)
   LoRa.setPins(15, 17, 13);
 #endif
   if (!LoRa.begin(BAND)) {
-    Serial.println("Starting LoRa failed!");
-    while (1);
+    Serial.println("Starting LoRa failed! Rebooting...");
+    Serial.flush();
+    esp_restart();
   }
 
   title("LoRa radio online");
@@ -31,7 +32,7 @@ void powerDownAll(void)
 
 void powerUpSensors(void)
 {
-  delay(500);
+  delay(SENSOR_POWER_SETTLE_MS);
   digitalWrite(SENSOR_PWR, HIGH);
-  delay(500);
+  delay(SENSOR_POWER_SETTLE_MS);
 }

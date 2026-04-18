@@ -15,7 +15,7 @@ static float calculateWindSpeed(void) {
   int samples = 0;
   if (count) {
     MonPrintf("Count: %i\n", count);
-    for (int position = 1; position < 7; position++) {
+    for (int position = 1; position < count && position < WIND_MAX_SAMPLES; position++) {
       if (tickTime[position]) {
         msTotal += tickTime[position];
         samples++;
