@@ -44,8 +44,9 @@ const int UpdateIntervalSeconds = 30;  //Sleep timer (30s) for my normal operati
 //===========================================
 //Anemometer Calibration
 //===========================================
-//I see 2 switch pulls to GND per revolation. Not sure what others see
-#define WIND_TICKS_PER_REVOLUTION 2
+// SparkFun Weather Meter Kit anemometer: 1 reed switch closure per revolution
+// Kit spec: 1 pulse/second = 1.492 MPH (2.4 km/h)
+#define WIND_TICKS_PER_REVOLUTION 1
 
 //===========================================
 // ISR Debounce timings (milliseconds)

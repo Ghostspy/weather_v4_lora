@@ -250,6 +250,7 @@ void setup() {
       //give 5 seconds to aquire wind speed data
       delay(WIND_ACQUISITION_MS);
       //TODO: set TOD on interval
+      MonPrintf("Wind dir ADC raw: %d\n", analogRead(WIND_DIR_PIN));
       checkMaxWind();
 
 
