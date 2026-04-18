@@ -56,13 +56,6 @@
 #include <BME280I2C.h>
 #include <Adafruit_SI1145.h>
 
-//OLED diagnostics board
-//#include <Adafruit_GFX.h>
-//#include <Adafruit_SSD1306.h>
-
-//#define OLED_RESET 4
-
-
 //===========================================
 // Weather-environment structure
 //===========================================
@@ -143,7 +136,6 @@ extern portMUX_TYPE windMux;
 BH1750 lightMeter(0x23);
 BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
-bool lowBattery = false;
 struct sensorStatus status;
 time_t now;
 time_t nextUpdate;
@@ -348,10 +340,6 @@ void sleepyTime(long nextUpdate) {
   int elapsedTime;
   Serial.println("Going to sleep now...");
 
-
-  //rtc_gpio_set_level(GPIO_NUM_16, HIGH);
-  //rtc_gpio_set_level(GPIO_NUM_26, HIGH);
-
   // EXT1 wakeup works on both ESP32 and ESP32-S3 (EXT0 was ESP32-only).
   // Wakes on LOW — matches the rain gauge reed switch pulling to GND.
   // NOTE: on ESP32-S3, RAIN_PIN must be in the range 0-21 (RTC-capable GPIOs).
@@ -403,38 +391,6 @@ void BlinkLED(int count) {
     digitalWrite(LED_BUILTIN, LOW);
     delay(350);
   }
-}
-
-//===========================================
-// HexDump: display environment structure bytes
-//===========================================
-void HexDump(struct sensorData environment) {
-  int size = sizeof(sensorData);
-  int x;
-  char ch;
-  char *p = (char *)&environment;
-  //memset(&environment,0,28);
-
-  for (x = 0; x < size; x++) {
-    MonPrintf("%02X ", p[x]);
-    if (x % 8 == 7) {
-      MonPrintf("\n");
-    }
-  }
-  MonPrintf("\n");
-}
-
-//===========================================
-// FillEnvironment: Fill environment struct with test data (no sensors)
-//===========================================
-void FillEnvironment(struct sensorData *environment) {
-  environment->temperatureC = 20;
-  environment->windSpeed = 05;
-  //TODO environment->windDirection = 90;
-  environment->barometricPressure = 30;
-  environment->humidity = 15.0;
-  environment->UVIndex = 3.0;
-  environment->lux = 58;
 }
 
 //===========================================
