@@ -182,8 +182,8 @@ void setup() {
   //-- end time testing
 
   //set hardware pins
-  pinMode(WIND_SPD_PIN, INPUT);
-  pinMode(RAIN_PIN, INPUT);
+  pinMode(WIND_SPD_PIN, INPUT_PULLUP);
+  pinMode(RAIN_PIN, INPUT_PULLUP);
   pinMode(CHG_STAT, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(SENSOR_PWR, OUTPUT);
@@ -343,6 +343,8 @@ void sleepyTime(long nextUpdate) {
   // NOTE: on ESP32-S3, RAIN_PIN must be in the range 0-21 (RTC-capable GPIOs).
   //       GPIO 25 does not exist on ESP32-S3; reassign RAIN_PIN in defines.h
   //       if targeting S3 hardware.
+  // Ensure pull-up survives deep sleep so EXT1 sees a clean HIGH when reed is open.
+  gpio_pullup_en((gpio_num_t)RAIN_PIN);
   esp_sleep_enable_ext1_wakeup(1ULL << RAIN_PIN, ESP_EXT1_WAKEUP_ALL_LOW);
   elapsedTime = (int)millis() / 1000;
 
