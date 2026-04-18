@@ -100,9 +100,10 @@ void readLux(struct sensorData *environment) {
 //  readBME: BME sensor read
 //=======================================================
 void readBME(struct diagnostics *hardware) {
-  float relHum, pressure;
+  float pressure, bmeTemp, relHum;
   if (status.bme) {
-    bme.read(pressure, hardware->BMEtemperature, relHum, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
+    bme.read(pressure, bmeTemp, relHum, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
+    hardware->BMEtemperature = bmeTemp;
   } else {
     hardware->BMEtemperature = -100;
   }
@@ -113,9 +114,11 @@ void readBME(struct diagnostics *hardware) {
 //  readBME: BME sensor read
 //=======================================================
 void readBME(struct sensorData *environment) {
-  float case_temperature;
+  float pressure, case_temperature, humidity;
   if (status.bme) {
-    bme.read(environment->barometricPressure, case_temperature, environment->humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
+    bme.read(pressure, case_temperature, humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
+    environment->barometricPressure = pressure;
+    environment->humidity = humidity;
   } else {
     //set to insane values
     environment->barometricPressure = -100;
